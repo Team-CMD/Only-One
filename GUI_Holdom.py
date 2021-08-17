@@ -14,11 +14,13 @@ W_Width = 1225      # 창 너비
 Image_width = 0
 Image_height = 0
 betting_Check = True
+Table_Money = 0
 window = Tk()
 
 # 윈도우 창의제목 설정 가능
 # 윈도우 창의 너비와 높이, 초기 화면 위치 설정
 # 윈도우 창의 크기 조절 가능 여부
+
 def window_set():
     window.title("Holdom Game") 
     window.geometry(str(W_Width)+"x"+str(W_Height)+"+300+100") 
@@ -55,17 +57,48 @@ def cardCompare():
 
     return winner
 
-'''
+def Call():
+    pass
+
+def Die():
+    pass
+
+def countUP():
+    global Table_Money
+
+    if Table_Money <= 40:
+        Table_Money += 1
+    else:
+        Table_Money = 20 # 임시
+
+def countDown():
+    global Table_Money 
+
+    if Table_Money >= 0:
+        Table_Money -= 1
+    else:
+        Table_Money = 20 # 임시
+
+def Check():
+    global betting_Check
+
+    betting_Check = False
+
 def Button_place():
-    call = Button(window, text="call", borderwidth = 4)
-    call.place(x=1400, y=130, width=100, height=100)
+    up = Button(window, text="Up", command=countUP, borderwidth = 4, background="yellow")
+    up.place(x=W_Width*2/3 + 30, y=W_Height/2+40, width=120, height=40)
 
-    rai = Button(window, text="raize", borderwidth = 4)
-    rai.place(x=1400, y=400, width=100, height=100)
+    call = Button(window, text="Call", command=Call, borderwidth = 4, background="yellow")
+    call.place(x=W_Width*2/3 + 30, y=W_Height/2+140, width=120, height=40)
 
-    die = Button(window, text="die", borderwidth = 4)
-    die.place(x=1400, y=700, width=100, height=100)
-'''
+    down = Button(window, text="Down", command=countDown, borderwidth = 4, background="yellow")
+    down.place(x=W_Width*2/3 + 30, y=W_Height/2+240, width=120, height=40)
+
+    die = Button(window, text="Die", command=Die, borderwidth = 4, background="yellow")
+    die.place(x=W_Width*2/3+200, y=W_Height/2+90, width=120, height=40)
+
+    check = Button(window, text="Check", command=Check, borderwidth = 4, background="yellow")
+    check.place(x=W_Width*2/3+200, y=W_Height/2+190, width=120, height=40)
 
 def Roll():
     # 덱에서 랜덤으로 뽑아 카드를 주는 함수
@@ -99,39 +132,39 @@ def Roll():
             computer_Card.append(temp[i])
         cardList.remove(temp[i])
 
-def CardImage():
+def cardImageSet():
     global Image_height
     global Image_width
-    label = []
     img = []
-    resized_image = []
-    path = os.path.dirname(os.path.realpath(__file__))
-    path += "\\Image\\"
+    resized_img = []
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\CardImage\\"
 
-    img.append(Image.open(path + str(computer_Card[0]) + '.png'))
-    img.append(Image.open(path + str(share_Card[0]) + '.png'))
-    img.append(Image.open(path + str(share_Card[1]) + '.png'))
-    img.append(Image.open(path + 'back.png'))
-    img.append(Image.open(path + str(player_Card[0]) + '.png'))
+    for i in range(11):
+        img.append(Image.open(path + str(i) + '.png'))
+        img[i] = img[i].resize((img[i].size[0]//7, img[i].size[1]//7), Image.ANTIALIAS)
+        resized_img.append(ImageTk.PhotoImage(img[i]))
+    
+    Image_width = img[0].size[0]
+    Image_height = img[0].size[1]
 
-    Image_width = img[0].size[0]//7
-    Image_height = img[0].size[1]//7
+    return resized_img
 
-    for i in range(len(img)):
-        img[i] = img[i].resize((Image_width, Image_height), Image.ANTIALIAS)
-        resized_image.append(ImageTk.PhotoImage(img[i]))
-
-    return resized_image
 
 if __name__ == "__main__":
     window_set()
+    img = cardImageSet()
 
     while True:
+        Table_Money = 0
         label = []
         Roll()
-        img = CardImage()
-        for i in range(len(img)):
-            label.append(Label(window, image=img[i]))
+        Button_place()
+    
+        label.append(Label(window, image=img[computer_Card[0]]))
+        label.append(Label(window, image=img[share_Card[0]]))
+        label.append(Label(window, image=img[share_Card[1]]))
+        label.append(Label(window, image=img[0]))
+        label.append(Label(window, image=img[player_Card[0]]))
             
         label[0].place(x=W_Width/3, y=0)
         label[1].place(x=W_Width/3 - Image_width, y=W_Height/2 - Image_height//2)
@@ -140,10 +173,8 @@ if __name__ == "__main__":
         window.update()
 
         while betting_Check:
-            time.sleep(5)
-            betting_Check = False
-            # 베팅 함수
-            
+            window.update()
+            # 베팅 함수 
         # 카드 공개
         label[4].place(x=W_Width/3, y= W_Height - Image_height)
         window.update()
@@ -155,5 +186,7 @@ if __name__ == "__main__":
             pass # 비길경우
         else:
             pass
+
+    window.mainloop()
 
 
