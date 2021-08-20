@@ -19,9 +19,7 @@ Table_Money = 0
 Gamer_Money = [50, 50]
 player_bet = [0,0]
 Temp_Money = 0
-Betting_Money = 0
 turn = 0 # 0 = 플레이어 배팅, 1 = 컴퓨터 배팅
-tie = 0 # 승부 여부. 무승부 1, 그 외 0
 status = ["common","common"] # common, all, die
 txt = ""
 window = Tk()
@@ -93,9 +91,10 @@ def init():
     player_bet[0] = 0
     player_bet[1] = 0
 
-    Table_Money += 2
-    Gamer_Money[0] -= 1
-    Gamer_Money[1] -= 1
+    if Gamer_Money[0] != 0 and Gamer_Money[1] != 0:
+        Table_Money += 2
+        Gamer_Money[0] -= 1
+        Gamer_Money[1] -= 1
 
 def All():
     global betting_Check
@@ -116,10 +115,13 @@ def All():
 def Die():
     global betting_Check
     global Temp_Money
-    
+    global turn
+
     Temp_Money = 0
     status[0] = "die"
     betting_Check = False
+    turn = 1
+    Button_place()
 
 def countUP():
     global Temp_Money
@@ -256,7 +258,6 @@ def com_Betting():
     global betting_Check
     global Table_Money
     global Temp_Money
-    global Betting_Money
 
     sel = random.randrange(20)
     if sel < 18:
@@ -309,8 +310,13 @@ if __name__ == "__main__":
     window_set()
     txtRead()
     img = cardImageSet()
-
-    while Gamer_Money[0] != 0 and Gamer_Money[1] != 0:
+    start = Label(window, text = "Indian Holdom", font = ("궁서체", 80),fg = "yellow", bg = "black", width=1225, height=690)
+    start.pack();
+    window.update()
+    time.sleep(5)
+    start.destroy()
+    
+    while (Gamer_Money[0] != 0 and Gamer_Money[1] != 0) or winner == 2:
         cardImg = []
         init()
         Roll()
