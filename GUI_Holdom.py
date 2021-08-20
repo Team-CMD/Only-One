@@ -23,6 +23,7 @@ Betting_Money = 0
 turn = 0 # 0 = 플레이어 배팅, 1 = 컴퓨터 배팅
 tie = 0 # 승부 여부. 무승부 1, 그 외 0
 status = ["common","common"] # common, all, die
+txt = ""
 window = Tk()
 
 # 윈도우 창의제목 설정 가능
@@ -33,6 +34,16 @@ def window_set():
     window.title("Holdom Game") 
     window.geometry(str(W_Width)+"x"+str(W_Height)+"+300+100") 
     window.resizable(False,False)
+
+def txtRead():
+    global txt
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\" + "rule.txt"
+
+    f = open(path, 'r',encoding='utf-8')
+    lines = f.readlines()
+    for line in lines:
+        txt += line
+    f.close()
 
 def cardCompare():
     global status
@@ -105,12 +116,12 @@ def All():
 def Die():
     global betting_Check
     global Temp_Money
+    
     Temp_Money = 0
     status[0] = "die"
     betting_Check = False
 
 def countUP():
-    global Gamer_Money
     global Temp_Money
 
     if Temp_Money - player_bet[0] < Gamer_Money[0]:
@@ -119,7 +130,6 @@ def countUP():
 
 def countDown():
     global Temp_Money
-    global Betting_Money
 
     if Temp_Money > player_bet[1]:
         Temp_Money -= 1
@@ -139,9 +149,17 @@ def Check():
         betting_Check = False
     if Gamer_Money[0] == 0 and player_bet[1] >= player_bet[0]:
         betting_Check = False
+    if Gamer_Money[1] == 0:
+        betting_Check = False
     Label_place()
     turn = 1
-        
+    Button_place()
+
+def Rule():
+    newWindow = Toplevel()
+    aa = Label(newWindow, text=txt, justify="left")
+    aa.pack()
+
 def Button_place():
     state = NORMAL
 
@@ -150,18 +168,27 @@ def Button_place():
 
     up = Button(window, text="Up", command=countUP, borderwidth = 4, background="yellow", state=state)
     up.place(x=W_Width*2/3 + 30, y=W_Height/2+90, width=120, height=40)
+    up.update()
 
     down = Button(window, text="Down", command=countDown, borderwidth = 4, background="yellow", state=state)
     down.place(x=W_Width*2/3 + 30, y=W_Height/2+240, width=120, height=40)
+    down.update()
 
     all = Button(window, text="All_in", command=All, borderwidth = 4, background="yellow", state=state)
     all.place(x=W_Width*2/3 + 120, y=W_Height/2+165, width=120, height=40)    
+    all.update()
 
     die = Button(window, text="Die", command=Die, borderwidth = 4, background="yellow", state=state)
     die.place(x=W_Width*2/3+200, y=W_Height/2+90, width=120, height=40)
+    die.update()
 
     check = Button(window, text="Check", command=Check, borderwidth = 4, background="yellow", state=state)
     check.place(x=W_Width*2/3+200, y=W_Height/2+240, width=120, height=40)
+    check.update()
+
+    rule = Button(window, text="R", command=Rule, borderwidth = 4, background="green")
+    rule.place(x=10,y=10,width=20, height=20)
+    rule.update()
 
 def Label_place():
     Main_Label = Label(window, text = "Gambling Board", font = 150, fg = "green")
@@ -231,54 +258,42 @@ def com_Betting():
     global Temp_Money
     global Betting_Money
 
-    if turn:
-        sel = random.randrange(1,20)
-
-        if Gamer_Money[1] > 0 and Gamer_Money[1] < player_bet[0]: #겜은 참여했으나 콜을 맞출 돈이 없을 때.
-            fate = random.randrange(0, 2)
-            if fate == 0: # die선택
-                status[1] = "die"
-                betting_Check = False
-            else: # all선택
-                status[1] = "all"
-                betting_Check = False
-        else:
-            if sel < 19:
-                tmp = player_bet[1]
-                if player_bet[0] < Gamer_Money[1]:
-                    if Gamer_Money[1] - player_bet[1] < player_bet[0] - player_bet[1]:
-                        if Gamer_Money[1] - player_bet[1] == 1:
-                            ran = 1
-                        else:
-                            ran = random.randrange(1, Gamer_Money[1] - player_bet[1])
-                        player_bet[1] += ran
-                    else:
-                        player_bet[1] = random.randrange(1, Gamer_Money[1] % 8 + 2)+ player_bet[0]
-                        while player_bet[1] > Gamer_Money[1]:
-                            player_bet[1] = random.randrange(1, Gamer_Money[1] % 8 + 2)+ player_bet[0]
-                else:
-                    player_bet[1] = Gamer_Money[1]
-                Table_Money += player_bet[1] - tmp
-                Gamer_Money[1] -= player_bet[1]
-                if player_bet[0] == player_bet[1]:
-                    betting_Check = False
-                else:
-                    betting_Check = True
+    sel = random.randrange(20)
+    if sel < 18:
+        com_beforeBet = player_bet[1]
+        player_beforeBet = player_bet[0] - player_bet[1]
+        if player_beforeBet == 0:    # 컴퓨터 선 베팅
+            player_bet[1] = random.randrange(1, Gamer_Money[1]+1)   # +2 한 이유:  반올림 + 1 효과
+        else:                        # 컴퓨터 후 베팅
+            if player_beforeBet > Gamer_Money[1]:                       # 게임 참여 했음 but 콜 할 돈이 안됨
+                player_bet[1] = com_beforeBet + Gamer_Money[1] 
             else:
-                status[1] = "die"
+                player_bet[1] = com_beforeBet + random.randrange(player_beforeBet, Gamer_Money[1]+1)
+        Table_Money += player_bet[1] - com_beforeBet
+        Gamer_Money[1] -= player_bet[1] - com_beforeBet
+        if Gamer_Money[1] == 0 and player_beforeBet != 0:
+            betting_Check = False
+        else:
+            if player_bet[0] == player_bet[1]:
                 betting_Check = False
+            else:
+                betting_Check = True
+    else:
+        status[1] = "die"
+        betting_Check = False
 
-        Label_place()
-        turn = 0
-        Button_place()
-        time.sleep(3)
+    time.sleep(3)
+    Label_place()
+    turn = 0
+    Button_place()
+        
 
 def cardImageSet():
     global Image_height
     global Image_width
     img = []
     resized_img = []
-    path = os.path.dirname(os.path.realpath(__file__)) + "\\CardImage\\"
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\"
 
     for i in range(11):
         img.append(Image.open(path + str(i) + '.png'))
@@ -290,47 +305,42 @@ def cardImageSet():
 
     return resized_img
 
-def allIn():
-    global Gamer_Money
-    global betting_Check
-    global status
-    for i in range(2):
-        if Gamer_Money[i] == 0:
-            status[i] = "all"
-    betting_Check = False
-
 if __name__ == "__main__":
     window_set()
+    txtRead()
     img = cardImageSet()
 
     while Gamer_Money[0] != 0 and Gamer_Money[1] != 0:
-        label = []
+        cardImg = []
         init()
         Roll()
         Label_place()
         Button_place()
 
         if Gamer_Money[0] == 0 or Gamer_Money[1] == 0:
-            allIn()
-        label.append(Label(window, image=img[computer_Card[0]]))
-        label.append(Label(window, image=img[share_Card[0]]))
-        label.append(Label(window, image=img[share_Card[1]]))
-        label.append(Label(window, image=img[0]))
-        label.append(Label(window, image=img[player_Card[0]]))
+            betting_Check = False
+
+        cardImg.append(Label(window, image=img[computer_Card[0]]))
+        cardImg.append(Label(window, image=img[share_Card[0]]))
+        cardImg.append(Label(window, image=img[share_Card[1]]))
+        cardImg.append(Label(window, image=img[0]))
+        cardImg.append(Label(window, image=img[player_Card[0]]))
             
-        label[0].place(x=W_Width/3, y=0)
-        label[1].place(x=W_Width/3 - Image_width, y=W_Height/2 - Image_height//2)
-        label[2].place(x=W_Width/3 + Image_width, y=W_Height/2 - Image_height//2)
-        label[3].place(x=W_Width/3, y= W_Height - Image_height)
+        cardImg[0].place(x=W_Width/3, y=0)
+        cardImg[1].place(x=W_Width/3 - Image_width, y=W_Height/2 - Image_height//2)
+        cardImg[2].place(x=W_Width/3 + Image_width, y=W_Height/2 - Image_height//2)
+        cardImg[3].place(x=W_Width/3, y= W_Height - Image_height)
         window.update()
- 
+
         while betting_Check:
-            com_Betting()
+            if turn == 1:
+                com_Betting()
             window.update()
             
-        label[4].place(x=W_Width/3, y= W_Height - Image_height)
+        cardImg[4].place(x=W_Width/3, y= W_Height - Image_height)
+        time.sleep(1)
         window.update()
-        time.sleep(3)
+        time.sleep(2)
         betting_Check = True
 
         winner = cardCompare()
@@ -347,8 +357,9 @@ if __name__ == "__main__":
                 Gamer_Money[1] += Table_Money
                 messagebox.showinfo("Winner", "Computer Win")
             Table_Money = 0
-
-    turn = winner
+            turn = winner
+        window.update()
+        
 
     if Gamer_Money[0] == 0:
         messagebox.showinfo("Final Winner", "Final Winner : Computer")
