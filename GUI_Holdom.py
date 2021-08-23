@@ -373,4 +373,4 @@ if __name__ == "__main__":
         messagebox.showinfo("Final Winner", "Final Winner : Player")
     sys.exit()
 
-    window.mainloop()
+    
