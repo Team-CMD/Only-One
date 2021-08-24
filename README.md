@@ -13,3 +13,11 @@ It means **`"Eveyone select one for Only one's win."`**
     - Indian Holdom  
         1. Locate `dist/`
         2. Excute the program `GUI_Holdom.exe`
+
+
+```md
+< Only One >
+* Renewal GUI Game Project in CMD-SPTJ Project :)    
+* Contributor : HS98094, skm0619, JH9892
+> Copyright 2021. HS98094, skm0619, JH9892. All creatures cannot be copied without permission.
+```
