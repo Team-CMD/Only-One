@@ -1,17 +1,14 @@
-import random, sys
-import os
+import random, sys, os, time, random
 from tkinter import *
 from PIL import Image, ImageTk
-import time
 from tkinter import messagebox
-import random
 
 cardList = []       # 전체 카드
 player_Card = []    # 플레이어 카드
 computer_Card = []  # 컴퓨터 카드
 share_Card = []     # 공유 카드
-W_Height = 690      # 창 높이
-W_Width = 1225      # 창 너비
+W_Height = 720      # 창 높이
+W_Width = 1278      # 창 너비
 Image_width = 0
 Image_height = 0
 betting_Check = True
@@ -21,7 +18,6 @@ player_bet = [0,0]
 Temp_Money = 0
 turn = 0 # 0 = 플레이어 배팅, 1 = 컴퓨터 배팅
 status = ["common","common"] # common, all, die
-txt = ""
 window = Tk()
 
 # 윈도우 창의제목 설정 가능
@@ -32,16 +28,6 @@ def window_set():
     window.title("Holdom Game") 
     window.geometry(str(W_Width)+"x"+str(W_Height)+"+300+100") 
     window.resizable(False,False)
-
-def txtRead():
-    global txt
-    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\" + "rule.txt"
-
-    f = open(path, 'r',encoding='utf-8')
-    lines = f.readlines()
-    for line in lines:
-        txt += line
-    f.close()
 
 def cardCompare():
     global status
@@ -97,22 +83,14 @@ def init():
         Gamer_Money[1] -= 1
 
 def All():
-    global betting_Check
-    global Table_Money
-    global Gamer_Money
     global Temp_Money
 
-    if Gamer_Money[0] > 0 and Gamer_Money[0] - Temp_Money < player_bet[1] - Temp_Money:
-        Table_Money += Gamer_Money[0]
-        Temp_Money += Gamer_Money[0]
-        Gamer_Money[0] = 0 
-        status[0] = "all"
-        betting_Check = False
-    else:
-        messagebox.showinfo("참고하세요", "해당 버튼은 상대 배팅액보다 보유액이 적어야 사용가능합니다!")
-    Label_place()       
+    if Gamer_Money[0] != 0:
+        Temp_Money = Gamer_Money[0]
 
-def Die():
+    Label_place()           
+
+def Die(butImg):
     global betting_Check
     global Temp_Money
     global turn
@@ -121,7 +99,7 @@ def Die():
     status[0] = "die"
     betting_Check = False
     turn = 1
-    Button_place()
+    Button_place(butImg)
 
 def countUP():
     global Temp_Money
@@ -137,89 +115,98 @@ def countDown():
         Temp_Money -= 1
         Label_place()
 
-def Check():
+def Check(butImg):
     global betting_Check
     global Table_Money
     global Gamer_Money
     global Temp_Money
     global turn
 
-    Gamer_Money[0] -= Temp_Money - player_bet[0] # 임시금액만큼 돈이 빠짐
-    Table_Money += Temp_Money - player_bet[0]
-    player_bet[0] = Temp_Money
-    if player_bet[0] == player_bet[1]:
-        betting_Check = False
-    if Gamer_Money[0] == 0 and player_bet[1] >= player_bet[0]:
-        betting_Check = False
-    if Gamer_Money[1] == 0:
-        betting_Check = False
-    Label_place()
-    turn = 1
-    Button_place()
+    if Temp_Money != 0:
+        if Temp_Money >= player_bet[1]:
+            if Temp_Money < Gamer_Money[0]:
+                Gamer_Money[0] -= Temp_Money - player_bet[0] # 임시금액만큼 돈이 빠짐
+                Table_Money += Temp_Money - player_bet[0]
+            else:
+                Gamer_Money[0] = 0
+                Table_Money += Temp_Money
+            player_bet[0] = Temp_Money
+            if player_bet[0] == player_bet[1]:
+                betting_Check = False
+            if Gamer_Money[0] == 0 and player_bet[1] >= player_bet[0]:
+                betting_Check = False
+            if Gamer_Money[1] == 0:
+                betting_Check = False
+            Label_place()
+            turn = 1
+            Button_place(butImg)
 
 def Rule():
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\View Design\\Rule View.png"
+    rule = Image.open(path)
+    rule2 = ImageTk.PhotoImage(rule)
     newWindow = Toplevel()
-    aa = Label(newWindow, text=txt, justify="left")
-    aa.pack()
+    ruleEx = Label(newWindow, image=rule2)
+    ruleEx.pack()
 
-def Button_place():
+def Button_place(butImg):
     state = NORMAL
 
     if turn:
         state = DISABLED
 
-    up = Button(window, text="Up", command=countUP, borderwidth = 4, background="yellow", state=state)
-    up.place(x=W_Width*2/3 + 30, y=W_Height/2+90, width=120, height=40)
+    up = Button(window, image=butImg[0], command=countUP, borderwidth = 0, state=state)
+    up.place(x = W_Width*5/6-145, y=465, width=120, height=40)
     up.update()
 
-    down = Button(window, text="Down", command=countDown, borderwidth = 4, background="yellow", state=state)
-    down.place(x=W_Width*2/3 + 30, y=W_Height/2+240, width=120, height=40)
+    down = Button(window, image=butImg[1], command=countDown, borderwidth = 0, state=state)
+    down.place(x = W_Width*5/6-145, y=605, width=120, height=40)
     down.update()
 
-    all = Button(window, text="All_in", command=All, borderwidth = 4, background="yellow", state=state)
-    all.place(x=W_Width*2/3 + 120, y=W_Height/2+165, width=120, height=40)    
+    all = Button(window, image=butImg[2], command=All, borderwidth = 0, state=state)
+    all.place(x = W_Width*5/6+25, y=605, width=120, height=40)    
     all.update()
 
-    die = Button(window, text="Die", command=Die, borderwidth = 4, background="yellow", state=state)
-    die.place(x=W_Width*2/3+200, y=W_Height/2+90, width=120, height=40)
+    die = Button(window, image=butImg[3], command=lambda : Die(butImg), borderwidth = 0, state=state)
+    die.place(x = W_Width*5/6+25, y=465, width=120, height=40)
     die.update()
 
-    check = Button(window, text="Check", command=Check, borderwidth = 4, background="yellow", state=state)
-    check.place(x=W_Width*2/3+200, y=W_Height/2+240, width=120, height=40)
-    check.update()
+    betting = Button(window, image=butImg[4], command=lambda : Check(butImg), borderwidth = 0, state=state)
+    betting.place(x = W_Width*5/6-60, y=535, width=120, height=40)
+    betting.update()
 
-    rule = Button(window, text="R", command=Rule, borderwidth = 4, background="green")
-    rule.place(x=10,y=10,width=20, height=20)
+    rule = Button(window, image=butImg[5], command=Rule, borderwidth = 2)
+    rule.place(x=10,y=10,width=35, height=35)
     rule.update()
 
 def Label_place():
-    Main_Label = Label(window, text = "Gambling Board", font = 150, fg = "green")
-    Main_Label.place(x = 930, y =10)
+    Main_Label = Label(window, text = "Gambling Board", font = ("",20), fg = "green",bg="white")
+    Main_Label.place(x = W_Width*5/6-100, y = 20)
 
-    PMoney_Label = Label(window, text = "나의 보유 칩")
-    PMoney_Label.place(x = W_Width * 2 / 3, y = W_Height / 2 - 280, width = 120, height = 40)
+    PMoney_Label = Label(window, text = "나의 보유 칩", bg="white")
+    PMoney_Label.place(x = W_Width*5/6-145, y = W_Height / 2 - 280, width = 120, height = 40)
     PMoney_Value = Label(window, text = Gamer_Money[0], bg = "white", relief="ridge", width = 120, height = 40)
-    PMoney_Value.place(x = W_Width * 2 / 3 + 200, y = W_Height / 2 - 280, width = 120, height = 40)
+    PMoney_Value.place(x = W_Width * 2 / 3 + 240, y = W_Height / 2 - 280, width = 120, height = 40)
 
-    CMoney_Label = Label(window, text = "상대 보유 칩")
-    CMoney_Label.place(x = W_Width * 2 / 3, y = W_Height / 2 - 240, width = 120, height = 40)
+    CMoney_Label = Label(window, text = "상대 보유 칩", bg="white")
+    CMoney_Label.place(x = W_Width*5/6-145, y = W_Height / 2 - 240, width = 120, height = 40)
     CMoney_Value = Label(window, text = Gamer_Money[1], bg = "white", relief="ridge", width = 120, height = 40)
-    CMoney_Value.place(x = W_Width * 2 / 3 + 200, y = W_Height / 2 - 240, width = 120, height = 40)
+    CMoney_Value.place(x = W_Width * 2 / 3 + 240, y = W_Height / 2 - 240, width = 120, height = 40)
 
-    TMoney_Label = Label(window, text = "테이블 전체 칩")
-    TMoney_Label.place(x = W_Width * 2 / 3, y = W_Height / 2 - 200, width = 120, height = 40)
+    TMoney_Label = Label(window, text = "테이블 전체 칩", bg="white")
+    TMoney_Label.place(x = W_Width*5/6-145, y = W_Height / 2 - 200, width = 120, height = 40)
     TMoney_Value = Label(window, text = Table_Money, bg = "white", relief="ridge", width = 120, height = 40)
-    TMoney_Value.place(x = W_Width * 2 / 3 + 200, y = W_Height / 2 - 200, width = 120, height = 40)
+    TMoney_Value.place(x = W_Width * 2 / 3 + 240, y = W_Height / 2 - 200, width = 120, height = 40)
 
-    Cbetting_Label = Label(window, text = "상대 배팅액")
-    Cbetting_Label.place(x = W_Width * 2 / 3, y = W_Height / 2 - 80, width = 120, height = 40)
+    Cbetting_Label = Label(window, text = "상대 배팅액", bg="white")
+    Cbetting_Label.place(x = W_Width*5/6-145, y = W_Height / 2 - 80, width = 120, height = 40)
     Cbetting_Value = Label(window, text = player_bet[1], bg = "white", relief="ridge", width = 120, height = 40)
-    Cbetting_Value.place(x = W_Width * 2 / 3 + 200, y = W_Height / 2 - 80, width = 120, height = 40)
+    Cbetting_Value.place(x = W_Width * 2 / 3 + 240, y = W_Height / 2 - 80, width = 120, height = 40)
 
-    Pbetting_Label = Label(window, text = "나의 배팅액")
-    Pbetting_Label.place(x = W_Width * 2 / 3, y = W_Height / 2 - 40, width = 120, height = 40)
+    Pbetting_Label = Label(window, text = "나의 배팅액", bg="white")
+    Pbetting_Label.place(x = W_Width*5/6-145, y = W_Height / 2 - 40, width = 120, height = 40)
     Pbetting_Value = Label(window, text = Temp_Money, bg = "white", relief="ridge", width = 120, height = 40)
-    Pbetting_Value.place(x = W_Width * 2 / 3 + 200, y = W_Height / 2 - 40, width = 120, height = 40)
+    Pbetting_Value.place(x = W_Width * 2 / 3 + 240, y = W_Height / 2 - 40, width = 120, height = 40)
 
 def Roll():
     # 덱에서 랜덤으로 뽑아 카드를 주는 함수
@@ -253,7 +240,7 @@ def Roll():
             computer_Card.append(temp[i])
         cardList.remove(temp[i])
 
-def com_Betting():
+def com_Betting(butImg):
     global turn
     global betting_Check
     global Table_Money
@@ -269,10 +256,13 @@ def com_Betting():
             if player_beforeBet > Gamer_Money[1]:                       # 게임 참여 했음 but 콜 할 돈이 안됨
                 player_bet[1] = com_beforeBet + Gamer_Money[1] 
             else:
-                player_bet[1] = com_beforeBet + random.randrange(player_beforeBet, Gamer_Money[1]+1)
+                if Gamer_Money[0] == 0:
+                    player_bet[1] = com_beforeBet + player_beforeBet
+                else:
+                    player_bet[1] = com_beforeBet + random.randrange(player_beforeBet, Gamer_Money[1]+1)
         Table_Money += player_bet[1] - com_beforeBet
         Gamer_Money[1] -= player_bet[1] - com_beforeBet
-        if Gamer_Money[1] == 0 and player_beforeBet != 0:
+        if Gamer_Money[1] == 0 and player_beforeBet > 0 and player_bet[0] >= player_bet[1]:
             betting_Check = False
         else:
             if player_bet[0] == player_bet[1]:
@@ -286,7 +276,7 @@ def com_Betting():
     time.sleep(3)
     Label_place()
     turn = 0
-    Button_place()
+    Button_place(butImg)
         
 
 def cardImageSet():
@@ -294,11 +284,11 @@ def cardImageSet():
     global Image_width
     img = []
     resized_img = []
-    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\"
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\Card Design\\"
 
     for i in range(11):
         img.append(Image.open(path + str(i) + '.png'))
-        img[i] = img[i].resize((img[i].size[0]//7, img[i].size[1]//7), Image.ANTIALIAS)
+        img[i] = img[i].resize((img[i].size[0]//4, img[i].size[1]//4), Image.ANTIALIAS)
         resized_img.append(ImageTk.PhotoImage(img[i]))
     
     Image_width = img[0].size[0]
@@ -306,46 +296,94 @@ def cardImageSet():
 
     return resized_img
 
+def WindowUpdate():
+    try:
+        window.update()
+    except:
+        sys.exit()
+
+def Intro():
+    backgrond = Image.open(os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\View Design\\Intro View.png")
+    backgrond2 = ImageTk.PhotoImage(backgrond)
+    start = Label(image=backgrond2)
+    start.pack();
+    WindowUpdate()
+    time.sleep(3)
+    start.destroy()
+
+def ButtonImageSet():
+    img = []
+    resized_img = []
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\Button Design\\"
+
+    img.append(Image.open(path + "Up Button.png"))
+    img.append(Image.open(path + "Down Button.png"))
+    img.append(Image.open(path + "All in Button.png"))
+    img.append(Image.open(path + "Die Button.png"))
+    img.append(Image.open(path + "Betting Button.png"))
+    img.append(Image.open(path + "Setting Button.png"))
+
+    for i in range(6):
+        img[i] = img[i].resize((img[i].size[0]//2, img[i].size[1]//2), Image.ANTIALIAS)
+        resized_img.append(ImageTk.PhotoImage(img[i]))
+
+    return resized_img
+
 if __name__ == "__main__":
     window_set()
-    txtRead()
     img = cardImageSet()
-    start = Label(window, text = "Indian Holdom", font = ("궁서체", 80),fg = "yellow", bg = "black", width=1225, height=690)
-    start.pack();
-    window.update()
-    time.sleep(5)
-    start.destroy()
-    
+    butImg = ButtonImageSet()
+    Intro()
+    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\View Design\\Main View.png"
+    back = Image.open(path)
+    backgrond = ImageTk.PhotoImage(back)
+    C = Canvas(window, width=W_Width, height=W_Height)
+    C.pack()
+    C.create_image(0,0,anchor=NW, image=backgrond)
+
     while (Gamer_Money[0] != 0 and Gamer_Money[1] != 0) or winner == 2:
         cardImg = []
         init()
         Roll()
         Label_place()
-        Button_place()
+        Button_place(butImg)
 
         if Gamer_Money[0] == 0 or Gamer_Money[1] == 0:
             betting_Check = False
 
-        cardImg.append(Label(window, image=img[computer_Card[0]]))
-        cardImg.append(Label(window, image=img[share_Card[0]]))
-        cardImg.append(Label(window, image=img[share_Card[1]]))
-        cardImg.append(Label(window, image=img[0]))
-        cardImg.append(Label(window, image=img[player_Card[0]]))
+        cardImg.append(Label(window, image=img[computer_Card[0]], borderwidth = 0))
+        cardImg.append(Label(window, image=img[share_Card[0]], borderwidth = 0))
+        cardImg.append(Label(window, image=img[share_Card[1]], borderwidth = 0))
+        cardImg.append(Label(window, image=img[0], borderwidth = 0))
+        cardImg.append(Label(window, image=img[player_Card[0]], borderwidth = 0))
+        cardImg.append(Label(window, image=img[0], borderwidth = 0))
+        cardImg.append(Label(window, image=img[0], borderwidth = 0))
+        cardImg.append(Label(window, image=img[0], borderwidth = 0))
             
-        cardImg[0].place(x=W_Width/3, y=0)
-        cardImg[1].place(x=W_Width/3 - Image_width, y=W_Height/2 - Image_height//2)
-        cardImg[2].place(x=W_Width/3 + Image_width, y=W_Height/2 - Image_height//2)
-        cardImg[3].place(x=W_Width/3, y= W_Height - Image_height)
-        window.update()
+        cardImg[5].place(x=W_Width/3-Image_width/2, y=20)
+        cardImg[6].place(x=W_Width/3 - Image_width*3/2, y=W_Height/2 - Image_height//2)
+        cardImg[7].place(x=W_Width/3 + Image_width/2, y=W_Height/2 - Image_height//2)
+        cardImg[3].place(x=W_Width/3-Image_width/2, y= W_Height - Image_height-20)
+        WindowUpdate()
+        time.sleep(2)
+        cardImg[5].destroy()
+        cardImg[6].destroy()
+        cardImg[7].destroy()
+
+        cardImg[0].place(x=W_Width/3-Image_width/2, y=20)
+        cardImg[1].place(x=W_Width/3 - Image_width*3/2, y=W_Height/2 - Image_height//2)
+        cardImg[2].place(x=W_Width/3 + Image_width/2, y=W_Height/2 - Image_height//2)
+        WindowUpdate()
+        
 
         while betting_Check:
             if turn == 1:
-                com_Betting()
-            window.update()
+                com_Betting(butImg)
+            WindowUpdate()
             
-        cardImg[4].place(x=W_Width/3, y= W_Height - Image_height)
+        cardImg[4].place(x=W_Width/3-Image_width/2, y= W_Height - Image_height-20)
         time.sleep(1)
-        window.update()
+        WindowUpdate()
         time.sleep(2)
         betting_Check = True
 
@@ -364,7 +402,8 @@ if __name__ == "__main__":
                 messagebox.showinfo("Winner", "Computer Win")
             Table_Money = 0
             turn = winner
-        window.update()
+        Label_place()
+        WindowUpdate()
         
 
     if Gamer_Money[0] == 0:
@@ -372,5 +411,3 @@ if __name__ == "__main__":
     else:
         messagebox.showinfo("Final Winner", "Final Winner : Player")
     sys.exit()
-
-    
