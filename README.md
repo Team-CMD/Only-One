@@ -1,7 +1,4 @@
 ![project logo](https://github.com/Team-CMD/SPTJ-GUIGame/blob/main/Resource/wiki_src/Project_Logo.png)
-
-# Hello! We are **`"Only One"`**
-
 ## What is **`"Only One"`**?
 This project title is "Only One".  
 It means **`"Eveyone select one for Only one's win."`**
