@@ -19,10 +19,13 @@ Temp_Money = 0
 turn = 0 # 0 = 플레이어 배팅, 1 = 컴퓨터 배팅
 status = ["common","common"] # common, all, die
 window = Tk()
-
+winner = 3
 # 윈도우 창의제목 설정 가능
 # 윈도우 창의 너비와 높이, 초기 화면 위치 설정
 # 윈도우 창의 크기 조절 가능 여부
+path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\View Design\\Rule View.png"
+rule = Image.open(path)
+rule2 = ImageTk.PhotoImage(rule)
 
 def window_set():
     window.title("Holdom Game") 
@@ -69,6 +72,7 @@ def cardCompare():
 def init():
     global Temp_Money
     global Table_Money
+    global winner
 
     status[0] = "common"
     status[1] = "common"
@@ -77,7 +81,7 @@ def init():
     player_bet[0] = 0
     player_bet[1] = 0
 
-    if Gamer_Money[0] != 0 and Gamer_Money[1] != 0:
+    if Gamer_Money[0] != 0 and Gamer_Money[1] != 0 and winner != 2:
         Table_Money += 2
         Gamer_Money[0] -= 1
         Gamer_Money[1] -= 1
@@ -115,7 +119,7 @@ def countDown():
         Temp_Money -= 1
         Label_place()
 
-def Check(butImg):
+def Betting(butImg):
     global betting_Check
     global Table_Money
     global Gamer_Money
@@ -142,9 +146,7 @@ def Check(butImg):
             Button_place(butImg)
 
 def Rule():
-    path = os.path.dirname(os.path.realpath(__file__)) + "\\Resource\\View Design\\Rule View.png"
-    rule = Image.open(path)
-    rule2 = ImageTk.PhotoImage(rule)
+    global rule2
     newWindow = Toplevel()
     ruleEx = Label(newWindow, image=rule2)
     ruleEx.pack()
@@ -171,7 +173,7 @@ def Button_place(butImg):
     die.place(x = W_Width*5/6+25, y=465, width=120, height=40)
     die.update()
 
-    betting = Button(window, image=butImg[4], command=lambda : Check(butImg), borderwidth = 0, state=state)
+    betting = Button(window, image=butImg[4], command=lambda : Betting(butImg), borderwidth = 0, state=state)
     betting.place(x = W_Width*5/6-60, y=535, width=120, height=40)
     betting.update()
 
@@ -397,7 +399,7 @@ if __name__ == "__main__":
                     messagebox.showinfo("Winner", "상대의 die로 게임에서 이기셨습니다")
                 else:
                     messagebox.showinfo("Winner", "Player Win")
-            else: # 컴퓨터 승
+            elif winner == 1: # 컴퓨터 승
                 Gamer_Money[1] += Table_Money
                 messagebox.showinfo("Winner", "Computer Win")
             Table_Money = 0
