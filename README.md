@@ -7,6 +7,10 @@ It means **`"Eveyone select one for Only one's win."`**
 ## 🤗 How to enjoy **`Only One`**?
     Please Read first 'GameList', and after 'How to play'. Thank you.
 
+--- 
+## Let's show wiki!
+**[👉 Wiki](https://github.com/Team-CMD/Only-One/wiki)**  
+
 **1. Game List**  
 - [Indian Holdom](https://m.blog.naver.com/PostView.naver?isHttpsRedirect=true&blogId=incpa&logNo=220093662839)  
 ___  
